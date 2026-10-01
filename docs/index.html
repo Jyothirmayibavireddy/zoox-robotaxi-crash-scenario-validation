@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Robotaxi Scenario Playbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: four numbered chapters (EDA → Perception → Statistics → Validation lab), each with its own accent; animated SVG scenes and live simulation throughout. */
+:root{
+  --ground:#EEF4F7; --surface:#FFFFFF; --ink:#1E1631; --muted:#5D5772; --line:#D6E0E5;
+  --road:#3B2F53; --road-edge:#271F3B; --walk:#D5E6EE; --grass:#BDE7CF; --tree:#36B074; --mark:#FFD166; --mark-w:#F3F0FF; --glass:#21193A;
+  --av:#FF6B4A; --av2:#FF9F43; --av-glow:rgba(255,107,74,.20);
+  --car1:#3D9BFF; --car2:#FFC23D; --bike:#E0479E;
+  --pass:#14A06B; --near:#F2A202; --hit:#E5403A; --pass-soft:rgba(20,160,107,.14); --near-soft:rgba(242,162,2,.16); --hit-soft:rgba(229,64,58,.13);
+  --test:#7C5CFF; --peer:#9A94AE;
+  --c-eda:#2F80ED; --c-per:#D63E92; --c-sta:#7C5CFF; --c-val:#14A06B;
+  --b1:#FFD9C7; --b2:#D3E4FF; --b3:#FFF0B0; --b4:#E7DBFF;
+  --display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
+  --body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0F1626; --surface:#172036; --ink:#EEEBFA; --muted:#A8A3C4; --line:#29334F;
+  --road:#2C2545; --road-edge:#18142B; --walk:#223049; --grass:#1C3933; --tree:#2B8C60; --mark:#E8BC55; --mark-w:#D2CCEB; --glass:#120E24;
+  --av:#FF7A5C; --av2:#FFAE5C; --av-glow:rgba(255,122,92,.24);
+  --car1:#5AAEFF; --car2:#F2B635; --bike:#F062B0;
+  --pass:#35C98F; --near:#F5B83A; --hit:#FF665C; --pass-soft:rgba(53,201,143,.17); --near-soft:rgba(245,184,58,.17); --hit-soft:rgba(255,102,92,.16);
+  --test:#9A82FF; --peer:#8B86A3;
+  --c-eda:#5B9BFF; --c-per:#F062B0; --c-sta:#9A82FF; --c-val:#35C98F;
+  --b1:#4A3434; --b2:#2A3A57; --b3:#4A4428; --b4:#3A3154;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --ground:#0F1626; --surface:#172036; --ink:#EEEBFA; --muted:#A8A3C4; --line:#29334F;
+  --road:#2C2545; --road-edge:#18142B; --walk:#223049; --grass:#1C3933; --tree:#2B8C60; --mark:#E8BC55; --mark-w:#D2CCEB; --glass:#120E24;
+  --av:#FF7A5C; --av2:#FFAE5C; --av-glow:rgba(255,122,92,.24);
+  --car1:#5AAEFF; --car2:#F2B635; --bike:#F062B0;
+  --pass:#35C98F; --near:#F5B83A; --hit:#FF665C; --pass-soft:rgba(53,201,143,.17); --near-soft:rgba(245,184,58,.17); --hit-soft:rgba(255,102,92,.16);
+  --test:#9A82FF; --peer:#8B86A3;
+  --c-eda:#5B9BFF; --c-per:#F062B0; --c-sta:#9A82FF; --c-val:#35C98F;
+  --b1:#4A3434; --b2:#2A3A57; --b3:#4A4428; --b4:#3A3154;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:30px 60px;display:grid;gap:64px}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.04;text-wrap:balance}
+h1{font-size:clamp(34px,5.4vw,62px);font-weight:800;letter-spacing:-.015em}
+h2{font-size:clamp(26px,3.3vw,38px);font-weight:800;letter-spacing:-.01em}
+h3{font-size:20px;font-weight:600}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{max-width:66ch;color:var(--muted);font-size:16.5px}
+header{display:grid;gap:18px}
+.nav{display:flex;flex-wrap:wrap;gap:10px}
+.nav a{display:inline-flex;align-items:center;gap:9px;text-decoration:none;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:7px 15px 7px 7px;font-weight:600;font-size:14px}
+.nav a span{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;color:#fff;font:600 12px var(--mono)}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chip{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:13.5px}
+.chip b{font-family:var(--mono);font-weight:500}
+.chip i{width:10px;height:10px;border-radius:50%}
+
+.chap{display:grid;gap:22px;scroll-margin-top:16px}
+.chap-head{display:grid;gap:10px;border-left:6px solid var(--accent);padding-left:16px}
+.chap-head .num{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;min-width:0}
+.sub{font-size:13px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.grid2{grid-template-columns:1fr}}
+.scroll-x{overflow-x:auto}
+svg.fluid{display:block;width:100%;height:auto}
+
+/* EDA facts */
+.facts{display:grid;gap:12px}
+.fact{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:start}
+.fact .big{font:800 24px var(--display);color:var(--c-eda);line-height:1}
+.fact p{font-size:14px;color:var(--muted)}
+.fact p b{color:var(--ink)}
+
+/* playbook */
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tab,.pill{font:600 14px var(--body);color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:999px;padding:8px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.tab .dot,.pill .dot{width:9px;height:9px;border-radius:50%}
+.tab[aria-selected="true"],.pill[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 3px var(--av-glow)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--av);outline-offset:2px}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.stage svg{display:block;width:100%;height:auto}
+.stage-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 16px;border-top:1px solid var(--line)}
+.phases{display:flex;gap:8px;flex-wrap:wrap}
+.phase{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:6px;color:var(--muted);border:1px solid var(--line)}
+.phase.on.a{background:var(--hit-soft);color:var(--hit);border-color:transparent}
+.phase.on.b{background:var(--pass-soft);color:var(--pass);border-color:transparent}
+.ctl{font:600 13px var(--body);background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer}
+.ctls{display:flex;gap:8px}
+.note{font-size:12.5px;color:var(--muted);padding:0 16px 14px}
+.side{display:grid;gap:16px;min-width:0}
+.ev{display:grid;gap:12px}
+.ev-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.ratio{font:800 52px var(--display);line-height:.9;color:var(--c-per)}
+.ratio small{display:block;font:500 12.5px var(--body);color:var(--muted);margin-top:6px}
+.badge{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:5px}
+.badge.sig{background:var(--hit-soft);color:var(--hit)}
+.bars{display:grid;gap:9px}
+.bar{display:grid;grid-template-columns:92px minmax(0,1fr) 60px;gap:10px;align-items:center;font-size:13px}
+.bar .track{height:14px;background:var(--ground);border-radius:7px;overflow:hidden}
+.bar .fill{height:100%;border-radius:7px;transition:width .7s cubic-bezier(.2,.8,.2,1)}
+.bar .val{font-family:var(--mono);font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
+.acts{border-left:5px solid var(--c-val)}
+.acts h3{color:var(--c-val)}
+.acts ol{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:10px;counter-reset:a}
+.acts li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;font-size:14px;animation:rise .45s both}
+.acts li::before{counter-increment:a;content:counter(a);width:24px;height:24px;border-radius:50%;background:var(--pass-soft);color:var(--pass);font:600 12px var(--mono);display:grid;place-items:center}
+.acts li:nth-child(2){animation-delay:.08s}.acts li:nth-child(3){animation-delay:.16s}.acts li:nth-child(4){animation-delay:.24s}
+.tagline{display:inline-flex;align-items:center;gap:6px;font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--c-per);margin-left:6px}
+@keyframes rise{from{transform:translateY(6px);opacity:.4}to{transform:none;opacity:1}}
+
+/* stats */
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.prob{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.prob .big{font:800 46px var(--display);color:var(--c-sta);line-height:1}
+.verdict{font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:5px}
+.verdict.sig{background:var(--hit-soft);color:var(--hit)}
+.verdict.ns{background:var(--ground);color:var(--muted)}
+
+/* lab */
+.lab{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:20px;align-items:start}
+@media (max-width:900px){.lab{grid-template-columns:1fr}}
+.controls{display:grid;gap:16px}
+.slider{display:grid;gap:6px}
+.slider label{display:flex;justify-content:space-between;gap:10px;font-size:14px;font-weight:600}
+.slider label output{font-family:var(--mono);font-weight:500;color:var(--c-val)}
+.slider input{width:100%;accent-color:var(--c-val)}
+.slider small{color:var(--muted);font-size:12.5px}
+.result{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px;border-radius:12px;background:var(--ground)}
+.outcome{font:800 22px var(--display);padding:6px 14px;border-radius:10px}
+.outcome.pass{background:var(--pass-soft);color:var(--pass)}
+.outcome.near{background:var(--near-soft);color:var(--near)}
+.outcome.hit{background:var(--hit-soft);color:var(--hit)}
+.metric{font-family:var(--mono);font-size:13.5px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-2px}
+.counts{display:flex;gap:10px;flex-wrap:wrap}
+.count{font:600 13px var(--mono);padding:4px 10px;border-radius:6px}
+.linked{font-size:13px;color:var(--muted);border-top:1px dashed var(--line);padding-top:12px}
+.linked b{color:var(--ink)}
+footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:18px;display:grid;gap:6px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Safety validation case study · NHTSA SGO crash reports · Jul 2021 – Jul 2026</span>
+    <h1>From public crash reports to robotaxi validation targets</h1>
+    <p class="lede">Zoox is expanding driverless service and needs to spend limited test time on the right scenarios. This case study cleans NHTSA's crash reports, finds where Zoox's crash mix differs from Waymo's, tests whether those differences are real, and turns them into simulation test cases.</p>
+    <nav class="nav" aria-label="Chapters">
+      <a href="#eda"><span style="background:var(--c-eda)">1</span>EDA</a>
+      <a href="#perception"><span style="background:var(--c-per)">2</span>Perception</a>
+      <a href="#stats"><span style="background:var(--c-sta)">3</span>Statistical modeling</a>
+      <a href="#lab"><span style="background:var(--c-val)">4</span>Validation lab</a>
+    </nav>
+    <div class="chips">
+      <span class="chip"><i style="background:var(--av)"></i><b>158</b> Zoox reports</span>
+      <span class="chip"><i style="background:var(--test)"></i><b>110</b> Highlander test fleet (Zoox software driving, safety operator onboard)</span>
+      <span class="chip"><i style="background:var(--av)"></i><b>48</b> driverless robotaxi</span>
+      <span class="chip"><i style="background:var(--peer)"></i><b>2,309</b> Waymo reports as baseline</span>
+    </div>
+  </header>
+
+  <!-- 1 EDA -->
+  <section class="chap" id="eda" style="--accent:var(--c-eda)" aria-labelledby="eda-h">
+    <div class="chap-head"><span class="num">Chapter 1 · Exploratory data analysis</span><h2 id="eda-h">Cleaning the record down to the 48 reports that matter</h2></div>
+    <div class="grid2">
+      <div class="card scroll-x"><div id="funnel"></div></div>
+      <div class="card facts">
+        <div class="fact"><span class="big">78%</span><p><b>Waymo is 78% of all ADS crashes after cleaning.</b> Raw counts track fleet size and years on the road, so every comparison here uses shares of each company's own reports.</p></div>
+        <div class="fact"><span class="big">2</span><p><b>Zoox is two programs.</b> All 110 Highlander reports list an in-vehicle operator; 46 of 48 robotaxi reports list none.</p></div>
+        <div class="fact"><span class="big">59</span><p><b>"Disengaged" appears in 59 of 110 test-fleet narratives</b> and in no robotaxi narrative, which independently confirms the fleet split.</p></div>
+      </div>
+    </div>
+    <div class="card scroll-x"><div id="timeline"></div></div>
+  </section>
+
+  <!-- 2 Perception -->
+  <section class="chap" id="perception" style="--accent:var(--c-per)" aria-labelledby="per-h">
+    <div class="chap-head"><span class="num">Chapter 2 · Perception and scenarios</span><h2 id="per-h">Where Zoox's crash mix differs, and what to do about it</h2>
+      <p class="lede" style="font-size:15.5px">Each scene plays the <span style="color:var(--hit);font-weight:600">reported pattern</span>, then an illustrative <span style="color:var(--pass);font-weight:600">validation target</span>. Dashed boxes, sensor sweep and green predicted paths show what the perception stack has to get right.</p></div>
+    <div class="tabs" role="tablist" aria-label="Scenario">
+      <button class="tab" role="tab" data-s="rt" aria-selected="true"><span class="dot" style="background:var(--car1)"></span>Right turn into a car</button>
+      <button class="tab" role="tab" data-s="vru" aria-selected="false"><span class="dot" style="background:var(--bike)"></span>Cyclist cuts into lane</button>
+      <button class="tab" role="tab" data-s="rear" aria-selected="false"><span class="dot" style="background:var(--car2)"></span>Rear-ended while stopped</button>
+    </div>
+    <div class="grid2">
+      <div class="stage">
+        <svg id="scene" viewBox="0 0 640 380" role="img" aria-label="Animated street scene for the selected scenario"></svg>
+        <div class="stage-bar">
+          <div class="phases"><span class="phase a on" id="ph-a">1 · Reported pattern</span><span class="phase b" id="ph-b">2 · Validation target</span></div>
+          <div class="ctls"><button class="ctl" id="tour" type="button" aria-pressed="true">Tour on</button><button class="ctl" id="play" type="button">Pause</button></div>
+        </div>
+        <p class="note" id="note"></p>
+      </div>
+      <div class="side" aria-live="polite">
+        <div class="card ev">
+          <div class="ev-top"><div class="ratio" id="ratio"></div><span class="badge sig" id="badge">Significant after correction</span></div>
+          <h3 id="ev-title"></h3>
+          <div class="bars" id="bars"></div>
+          <p class="sub" id="ev-sub"></p>
+        </div>
+        <div class="card acts"><h3>What Zoox could do</h3><ol id="acts"></ol></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 Stats -->
+  <section class="chap" id="stats" style="--accent:var(--c-sta)" aria-labelledby="sta-h">
+    <div class="chap-head"><span class="num">Chapter 3 · Statistical modeling</span><h2 id="sta-h">Which differences are real, and how sure can we be?</h2>
+      <p class="lede" style="font-size:15.5px">Left: shares with 95% Wilson intervals and Fisher's exact tests, Holm-corrected across all seven comparisons. Right: a Bayesian beta-binomial model (flat prior) that gives the probability the robotaxi's share really exceeds Waymo's.</p></div>
+    <div class="grid2">
+      <div class="card scroll-x"><div id="forest"></div></div>
+      <div class="card" style="display:grid;gap:14px">
+        <div class="pills" id="bayes-pills" role="group" aria-label="Robotaxi metric"></div>
+        <div class="prob"><span class="big" id="p-big"></span><span class="sub" id="p-txt"></span></div>
+        <div id="posterior"></div>
+        <p class="sub">Curves are posterior densities scaled to equal height. Waymo's is narrow because it rests on 2,309 reports; the robotaxi's is wide at 48.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 Lab -->
+  <section class="chap" id="lab" style="--accent:var(--c-val)" aria-labelledby="lab-h">
+    <div class="chap-head"><span class="num">Chapter 4 · Validation lab</span><h2 id="lab-h">Turning findings into simulation test cases</h2>
+      <p class="lede" style="font-size:15.5px">A scenario generator for the three over-represented patterns. Change a parameter and the case re-runs; the test matrix sweeps 100 cases at once. A <b>near-miss</b> is time-to-collision (or post-encroachment time) under 1.5 s, a common surrogate-safety threshold, so the suite learns from close calls, not only crashes.</p></div>
+    <div class="tabs" role="tablist" aria-label="Lab scenario">
+      <button class="tab" role="tab" data-l="rt" aria-selected="true"><span class="dot" style="background:var(--car1)"></span>Right turn</button>
+      <button class="tab" role="tab" data-l="cyc" aria-selected="false"><span class="dot" style="background:var(--bike)"></span>Cyclist cut-in</button>
+      <button class="tab" role="tab" data-l="rear" aria-selected="false"><span class="dot" style="background:var(--car2)"></span>Stop with follower</button>
+    </div>
+    <div class="lab">
+      <div class="card controls">
+        <div id="sliders" class="controls"></div>
+        <div id="policy" class="pills"></div>
+        <div class="result" aria-live="polite"><span class="outcome" id="outcome"></span><span class="metric" id="metric"></span></div>
+        <p class="linked" id="linked"></p>
+      </div>
+      <div style="display:grid;gap:16px;min-width:0">
+        <div class="stage"><svg id="labscene" viewBox="0 0 640 190" role="img" aria-label="Simulated test case animation"></svg></div>
+        <div class="card" style="display:grid;gap:12px">
+          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline"><h3>Test matrix</h3><div class="counts" id="counts"></div></div>
+          <div class="scroll-x"><div id="matrix"></div></div>
+          <div class="legend"><span><i style="background:var(--pass)"></i>Pass</span><span><i style="background:var(--near)"></i>Near-miss (&lt; 1.5 s)</span><span><i style="background:var(--hit)"></i>Contact</span><span><i style="background:transparent;border:2.5px solid var(--ink)"></i>Current case</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="sub">Simplified kinematic models for demonstration. A production suite would use full vehicle dynamics, recorded scenes and the real planner.</p>
+  </section>
+
+  <footer>
+    <span>Shares are within each company's own reports; reports are not normalized by miles driven, so nothing here ranks safety. NHTSA does not record fault, and the street scenes are illustrative, not reconstructions of specific crashes.</span>
+    <span>Independent portfolio analysis of public NHTSA data. Not affiliated with or endorsed by Zoox, Waymo or NHTSA. Vehicle artwork is an original design.</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+const NS="http://www.w3.org/2000/svg";
+const el=(t,a,p)=>{const n=document.createElementNS(NS,t);for(const k in a)n.setAttribute(k,a[k]);if(p)p.appendChild(n);return n;};
+const txt=(p,a,s)=>{const n=el("text",a,p);n.textContent=s;return n;};
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const lerp=(a,b,t)=>a+(b-a)*t, cl=t=>Math.max(0,Math.min(1,t)), seg=(t,a,b)=>cl((t-a)/(b-a));
+const eo=t=>1-Math.pow(1-t,2), eio=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const fmt=n=>n.toLocaleString("en-US");
+
+/* ============ shared vehicle art (original design) ============ */
+function defs(svg,id){
+  const d=el("defs",{},svg);
+  const g=el("linearGradient",{id:id,x1:"0",y1:"0",x2:"1",y2:"0"},d);
+  el("stop",{offset:"0",style:"stop-color:var(--av2)"},g); el("stop",{offset:"1",style:"stop-color:var(--av)"},g);
+}
+function robotaxi(p,gid,s){
+  s=s||1; const g=el("g",{},p); const k=el("g",{transform:`scale(${s})`},g);
+  el("ellipse",{cx:0,cy:0,rx:42,ry:22,fill:"var(--av-glow)"},k);
+  const beam=el("ellipse",{cx:34,cy:0,rx:22,ry:10,fill:"var(--mark)",opacity:.22},k);
+  [[-14,-13.5],[14,-13.5],[-14,9.5],[14,9.5]].forEach(w=>el("rect",{x:w[0]-5,y:w[1],width:10,height:4,rx:2,fill:"var(--road-edge)"},k));
+  el("rect",{x:-25,y:-12,width:50,height:24,rx:12,fill:`url(#${gid})`,stroke:"var(--road-edge)","stroke-width":1},k);
+  el("rect",{x:-12,y:-8.5,width:26,height:17,rx:7,fill:"var(--glass)",opacity:.62},k);
+  const strip=el("rect",{x:20,y:-7,width:3,height:14,rx:1.5,fill:"var(--mark-w)"},k);
+  el("circle",{cx:1,cy:0,r:5.2,fill:"var(--surface)"},k);
+  el("circle",{cx:1,cy:0,r:2.6,fill:"var(--car1)"},k);
+  if(!reduce){el("animate",{attributeName:"opacity",values:"1;.45;1",dur:"1.6s",repeatCount:"indefinite"},strip);el("animate",{attributeName:"opacity",values:".22;.08;.22",dur:"1.6s",repeatCount:"indefinite"},beam);}
+  return g;
+}
+function sedan(p,color,s){
+  s=s||1; const g=el("g",{},p); const k=el("g",{transform:`scale(${s})`},g);
+  el("rect",{x:-21,y:-9.5,width:44,height:21,rx:5,fill:"var(--road-edge)",opacity:.22},k);
+  el("rect",{x:-22,y:-10.5,width:44,height:21,rx:5,fill:color,stroke:"var(--road-edge)","stroke-width":1},k);
+  el("rect",{x:6,y:-8,width:8,height:16,rx:2,fill:"var(--glass)",opacity:.5},k);
+  el("rect",{x:-16,y:-7,width:6,height:14,rx:2,fill:"var(--glass)",opacity:.35},k);
+  return g;
+}
+function cyclist(p,s){
+  s=s||1; const g=el("g",{},p); const k=el("g",{transform:`scale(${s})`},g);
+  el("rect",{x:-11,y:-2.2,width:22,height:4.4,rx:2.2,fill:"var(--bike)"},k);
+  el("circle",{cx:-9,cy:0,r:2.6,fill:"var(--road-edge)"},k);el("circle",{cx:9,cy:0,r:2.6,fill:"var(--road-edge)"},k);
+  el("circle",{cx:-1,cy:0,r:5,fill:"var(--bike)",stroke:"var(--surface)","stroke-width":1.5},k);
+  return g;
+}
+
+/* ============ 1 · EDA ============ */
+(function funnel(){
+  const W=620,H=330, svg=el("svg",{viewBox:`0 0 ${W} ${H}`,class:"fluid",role:"img","aria-label":"Data cleaning funnel from 3,773 raw reports to 48 robotaxi reports"});
+  svg.style.minWidth="480px";
+  const stages=[["Raw ADS reports, two NHTSA files",3773,"var(--c-eda)",""],["Keep latest version of each report",3336,"var(--car1)","−437 re-filings"],["Merge co-filed crashes (same incident)",2956,"var(--test)","−380 duplicates"],["Zoox crashes",158,"var(--av)","5.3% of total"]];
+  const L=10, maxW=W-L-10, bw=v=>Math.max(30,maxW*Math.sqrt(v/3773));
+  stages.forEach((s,i)=>{
+    const y=12+i*66, w=bw(s[1]);
+    el("rect",{x:L,y:y+18,width:maxW,height:26,rx:13,fill:"var(--ground)"},svg);
+    const r=el("rect",{x:L,y:y+18,width:w,height:26,rx:13,fill:s[2]},svg);
+    if(!reduce) el("animate",{attributeName:"width",values:`${w};${w*0.985};${w}`,dur:"3s",begin:`${i*.3}s`,repeatCount:"indefinite"},r);
+    txt(svg,{x:L,y:y+11,"font-size":13,"font-weight":600,"font-family":"var(--body)",fill:"var(--ink)"},s[0]);
+    txt(svg,{x:L+Math.max(w,30)+10,y:y+36,"font-size":15,"font-weight":500,"font-family":"var(--mono)",fill:"var(--ink)"},fmt(s[1]));
+    if(s[3]) txt(svg,{x:W-10,y:y+11,"text-anchor":"end","font-size":11.5,"font-family":"var(--mono)",fill:"var(--muted)"},s[3]);
+    if(i<stages.length-1 && !reduce){
+      for(let d=0;d<3;d++){const c=el("circle",{cx:L+16,cy:y+44,r:3,fill:s[2]},svg);
+        el("animate",{attributeName:"cy",values:`${y+44};${y+84}`,dur:"1.4s",begin:`${d*.47}s`,repeatCount:"indefinite"},c);
+        el("animate",{attributeName:"opacity",values:"0;1;0",dur:"1.4s",begin:`${d*.47}s`,repeatCount:"indefinite"},c);}
+    }
+  });
+  const y=12+4*66-6;
+  [["Highlander test fleet",110,"var(--test)",0],["Robotaxi (driverless)",48,"var(--av)",1]].forEach(s=>{
+    const x=L+s[3]*(maxW/2+8), w=(maxW/2-8)*Math.sqrt(s[1]/158);
+    el("rect",{x,y:y+18,width:maxW/2-8,height:26,rx:13,fill:"var(--ground)"},svg);
+    el("rect",{x,y:y+18,width:w,height:26,rx:13,fill:s[2]},svg);
+    txt(svg,{x,y:y+11,"font-size":13,"font-weight":600,"font-family":"var(--body)",fill:"var(--ink)"},s[0]);
+    txt(svg,{x:x+w+8,y:y+36,"font-size":15,"font-family":"var(--mono)",fill:"var(--ink)"},String(s[1]));
+  });
+  document.getElementById("funnel").appendChild(svg);
+})();
+(function timeline(){
+  const M=[["24-04",3,0],["24-05",0,1],["24-06",0,0],["24-07",4,0],["24-08",2,0],["24-09",0,0],["24-10",4,0],["24-11",0,0],["24-12",1,1],["25-01",6,1],["25-02",3,1],["25-03",4,0],["25-04",2,2],["25-05",5,1],["25-06",3,1],["25-07",3,1],["25-08",1,3],["25-09",1,2],["25-10",3,3],["25-11",1,1],["25-12",0,2],["26-01",1,2],["26-02",2,4],["26-03",4,8],["26-04",1,5],["26-05",2,2],["26-06",3,6]];
+  const W=1100,H=250,L=34,R=12,T=40,B=34,max=10,bw=(W-L-R)/M.length,y=v=>T+(H-T-B)*(1-v/max);
+  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,class:"fluid",role:"img","aria-label":"Monthly Zoox crash reports by fleet, April 2024 to June 2026"}); svg.style.minWidth="640px";
+  txt(svg,{x:L,y:16,"font-size":15,"font-weight":700,"font-family":"var(--body)",fill:"var(--ink)"},"Monthly Zoox reports by fleet");
+  txt(svg,{x:L,y:32,"font-size":12,"font-family":"var(--body)",fill:"var(--muted)"},"Counts track a growing driverless fleet, not a crash rate.");
+  [0,2,4,6,8,10].forEach(t=>{el("line",{x1:L,x2:W-R,y1:y(t),y2:y(t),stroke:"var(--line)"},svg);txt(svg,{x:L-6,y:y(t)+4,"text-anchor":"end","font-size":11,"font-family":"var(--mono)",fill:"var(--muted)"},String(t));});
+  M.forEach((m,i)=>{const cx=L+i*bw+bw/2,w=bw*.36;
+    el("rect",{x:cx-w-1,y:y(m[1]),width:w,height:y(0)-y(m[1]),rx:2,fill:"var(--test)"},svg);
+    el("rect",{x:cx+1,y:y(m[2]),width:w,height:y(0)-y(m[2]),rx:2,fill:"var(--av)"},svg);
+    if(m[0].endsWith("-01")||i===0)txt(svg,{x:cx,y:H-B+18,"text-anchor":"middle","font-size":11,"font-family":"var(--mono)",fill:"var(--muted)"},"20"+m[0].slice(0,2));});
+  const xa=L+16*bw; el("line",{x1:xa,x2:xa,y1:T,y2:y(0),stroke:"var(--ink)","stroke-dasharray":"3 4",opacity:.5},svg);
+  txt(svg,{x:xa+6,y:T+12,"font-size":11.5,"font-family":"var(--mono)",fill:"var(--muted)"},"From Aug 2025 the robotaxi leads or ties every month");
+  [["Test fleet","var(--test)"],["Robotaxi","var(--av)"]].forEach((l,i)=>{el("rect",{x:W-200+i*100,y:6,width:12,height:12,rx:2,fill:l[1]},svg);txt(svg,{x:W-183+i*100,y:16,"font-size":12.5,"font-family":"var(--body)",fill:"var(--ink)"},l[0]);});
+  document.getElementById("timeline").appendChild(svg);
+})();
+
+/* ============ 2 · Perception playbook ============ */
+const D={
+  rt:{color:"var(--car1)",ratio:"9.7×",ratioSub:"more often than Waymo, all Zoox",title:"Right turn into a passenger car",
+    bars:[["Zoox",6.3,"var(--av)"],["Waymo",0.65,"var(--peer)"],["Robotaxi*",10.4,"var(--hit)"]],
+    sub:"*Robotaxi bar counts all right turns (any partner): 10.4% (5 of 48) vs Waymo's 2.3%. Las Vegas runs 17.7% vs 9.5% in San Francisco.",
+    note:"Illustrative: the vehicle turns right across a lane where a car keeps going straight. In the validation target it predicts the car's path and holds the turn.",
+    acts:[["Build a right-turn scenario family","in simulation, varying adjacent-lane speed, gap and turn timing (see Chapter 4)."],["Audit adjacent-lane tracking","at turn initiation, where the conflicting car sits close and to the side."],["Mine right-turn near-misses","from drive logs using post-encroachment time, to grow the sample beyond crashes."],["Weight Las Vegas geometry","in test planning; its right-turn share runs nearly double San Francisco's."]]},
+  vru:{color:"var(--bike)",ratio:"5.5×",ratioSub:"robotaxi vs Waymo",title:"Cyclist or pedestrian involved",
+    bars:[["Robotaxi",10.4,"var(--av)"],["Test fleet",8.2,"var(--test)"],["Waymo",1.9,"var(--peer)"]],
+    sub:"5 of 48 robotaxi reports involve a non-motorist, 4 of them cyclists, split between straight driving and right turns.",
+    note:"Illustrative: a cyclist swerves out around a parked car. In the validation target the vehicle predicts the swerve, slows early and gives room.",
+    acts:[["Oversample cyclist lateral moves","in perception training data: swerves around parked cars and bike-lane exits."],["Score trajectory prediction on cut-ins","and report cyclist miss rates separately from cars."],["Audit cyclist labels","in dense scenes, where parked cars occlude the start of the swerve."],["Gate releases on cyclist-merge cases","in the simulation regression suite (see Chapter 4)."]]},
+  rear:{color:"var(--car2)",ratio:"2.2×",ratioSub:"more often than Waymo, all Zoox",title:"Rear-ended by a car while stopped",
+    bars:[["Zoox",13.3,"var(--av)"],["Waymo",6.1,"var(--peer)"],["Robotaxi",10.4,"var(--car2)"]],
+    sub:"The robotaxi share points the same way but is not yet significant on its own (p = 0.22 at 48 reports).",
+    note:"Illustrative: the vehicle stops and a following car makes rear contact. In the validation target the stop starts earlier and smoother, leaving the follower room.",
+    acts:[["Profile deceleration before stops","and check that stops read as predictable to human drivers behind."],["Add follower awareness to stop planning","so a close trailing car shapes how hard the vehicle brakes."],["Replay real stops in simulation","with following drivers drawn from human reaction-time distributions."],["Track the robotaxi share","each NHTSA release; at 48 reports it is directional only."]]}
+};
+let scen="rt";
+function renderPanel(){
+  const d=D[scen];
+  document.getElementById("ratio").innerHTML=d.ratio+"<small>"+d.ratioSub+"</small>";
+  document.getElementById("ev-title").textContent=d.title;
+  const bars=document.getElementById("bars"); bars.innerHTML="";
+  d.bars.forEach(r=>{const row=document.createElement("div");row.className="bar";
+    row.innerHTML=`<span></span><span class="track"><span class="fill" style="width:0;background:${r[2]}"></span></span><span class="val">${r[1]}%</span>`;
+    row.firstChild.textContent=r[0]; bars.appendChild(row);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{row.querySelector(".fill").style.width=Math.min(100,r[1]/20*100)+"%";}));});
+  document.getElementById("ev-sub").textContent=d.sub;
+  document.getElementById("note").textContent=d.note;
+  const ol=document.getElementById("acts"); ol.innerHTML="";
+  d.acts.forEach(a=>{const li=document.createElement("li"),s=document.createElement("span"),b=document.createElement("b");b.textContent=a[0];s.appendChild(b);s.appendChild(document.createTextNode(" "+a[1]));li.appendChild(s);ol.appendChild(li);});
+  document.querySelectorAll("[data-s]").forEach(t=>t.setAttribute("aria-selected",t.dataset.s===scen));
+}
+const scene=document.getElementById("scene");
+function tree(x,y,r){el("circle",{cx:x+2,cy:y+3,r,fill:"var(--road-edge)",opacity:.15},scene);el("circle",{cx:x,cy:y,r,fill:"var(--tree)"},scene);el("circle",{cx:x-r*.3,cy:y-r*.3,r:r*.35,fill:"var(--grass)",opacity:.55},scene);}
+function block(x,y,w,h,f){el("rect",{x:x+3,y:y+4,width:w,height:h,rx:8,fill:"var(--road-edge)",opacity:.12},scene);el("rect",{x,y,width:w,height:h,rx:8,fill:f},scene);el("rect",{x:x+8,y:y+8,width:w-16,height:6,rx:3,fill:"var(--surface)",opacity:.5},scene);}
+function buildCity(){
+  scene.innerHTML=""; defs(scene,"avg-scene");
+  el("rect",{x:0,y:0,width:640,height:380,fill:"var(--grass)"},scene);
+  el("rect",{x:0,y:110,width:640,height:140,fill:"var(--walk)"},scene);
+  el("rect",{x:280,y:0,width:100,height:380,fill:"var(--walk)"},scene);
+  block(18,14,110,74,"var(--b1)");block(146,22,112,66,"var(--b3)");block(402,16,96,72,"var(--b2)");block(514,26,108,62,"var(--b4)");
+  block(24,276,100,84,"var(--b2)");block(142,284,116,72,"var(--b4)");block(404,280,90,80,"var(--b3)");block(512,272,112,90,"var(--b1)");
+  tree(268,96,9);tree(396,96,9);tree(266,266,9);tree(398,266,9);tree(140,100,7);tree(500,262,7);
+  el("rect",{x:0,y:120,width:640,height:120,fill:"var(--road)"},scene);
+  el("rect",{x:290,y:0,width:80,height:380,fill:"var(--road)"},scene);
+  [[0,282],[378,640]].forEach(s=>{el("line",{x1:s[0],x2:s[1],y1:178,y2:178,stroke:"var(--mark)","stroke-width":2.5},scene);el("line",{x1:s[0],x2:s[1],y1:211,y2:211,stroke:"var(--mark-w)","stroke-width":2,"stroke-dasharray":"14 12",opacity:.65},scene);});
+  el("line",{x1:330,x2:330,y1:0,y2:112,stroke:"var(--mark)","stroke-width":2.5},scene);
+  el("line",{x1:330,x2:330,y1:248,y2:380,stroke:"var(--mark)","stroke-width":2.5},scene);
+  el("line",{x1:276,x2:276,y1:180,y2:240,stroke:"var(--mark-w)","stroke-width":4},scene);
+  for(let i=0;i<6;i++){el("rect",{x:293+i*13,y:244,width:7,height:16,rx:1,fill:"var(--mark-w)",opacity:.6},scene);el("rect",{x:293+i*13,y:100,width:7,height:16,rx:1,fill:"var(--mark-w)",opacity:.6},scene);}
+}
+function box(w,h,label,color){
+  const g=el("g",{},scene);
+  el("rect",{x:-w/2,y:-h/2,width:w,height:h,rx:4,fill:"none",stroke:color,"stroke-width":1.6,"stroke-dasharray":"5 3"},g);
+  const t=txt(g,{x:-w/2,y:-h/2-5,"font-size":9,"font-family":"var(--mono)",fill:"var(--mark-w)","letter-spacing":".06em"},label);
+  for(let i=0;i<16;i++){const a=i/16*Math.PI*2,c=el("circle",{cx:Math.cos(a)*(w/2+3),cy:Math.sin(a)*(h/2+3),r:1.3,fill:color},g);
+    if(!reduce)el("animate",{attributeName:"opacity",values:"1;.15;1",dur:"0.9s",begin:`${(i%5)*.18}s`,repeatCount:"indefinite"},c);}
+  return g;
+}
+let A={};
+function setupScene(){
+  buildCity(); A={};
+  A.cone=el("path",{d:"M10 0 L170 -54 A180 180 0 0 1 170 54 Z",fill:"var(--av-glow)"},scene);
+  A.sweepG=el("g",{},scene); A.sweep=el("path",{d:"M0 0 L120 -16 A121 121 0 0 1 120 16 Z",fill:"var(--car1)",opacity:.18},A.sweepG);
+  A.ring=el("circle",{r:24,fill:"none",stroke:"var(--av)","stroke-width":1.4},scene);
+  if(scen==="vru")A.parked=sedan(scene,"var(--b4)");
+  A.pred=el("path",{d:"",fill:"none",stroke:"var(--pass)","stroke-width":2.6,"stroke-dasharray":"6 5","stroke-linecap":"round",opacity:0},scene);
+  A.other=scen==="vru"?cyclist(scene):sedan(scene,D[scen].color);
+  A.box=scen==="vru"?box(32,20,"CYCLIST · TRACK 07","var(--bike)"):box(54,30,"VEHICLE · TRACK 12","var(--car1)");
+  A.av=robotaxi(scene,"avg-scene");
+  A.gap=el("g",{opacity:0},scene);
+  A.flash=el("circle",{r:0,fill:"none",stroke:"var(--hit)","stroke-width":3.5},scene);
+  A.burst=el("circle",{r:0,fill:"var(--hit)"},scene);
+  A.banner=el("g",{},scene);
+  A.bannerBg=el("rect",{x:14,y:12,width:196,height:28,rx:14},A.banner);
+  A.bannerTx=txt(A.banner,{x:28,y:30,"font-size":12,"font-weight":700,"font-family":"var(--body)",fill:"#FFFFFF"},"");
+  A.ok=el("g",{opacity:0},scene); el("circle",{r:14,fill:"var(--pass)"},A.ok);
+  el("path",{d:"M-6 0 L-1.5 5 L7 -5",fill:"none",stroke:"#FFFFFF","stroke-width":3,"stroke-linecap":"round","stroke-linejoin":"round"},A.ok);
+}
+const arc=(cx,cy,r,a0,a1,s)=>{const th=a0+(a1-a0)*s;return {x:cx+r*Math.cos(th),y:cy+r*Math.sin(th),a:(th+Math.PI/2)*180/Math.PI};};
+const SC={
+  rt:{A:{tc:.64,cp:[301,216],f(t){let av;if(t<.42)av={x:lerp(20,275,eio(seg(t,0,.42))),y:195,a:0};else av=arc(275,230,35,-Math.PI/2,0,seg(t,.42,.64)*.58);
+        const ox=t<.64?lerp(-70,279,seg(t,0,.64)):279+4*eo(seg(t,.64,.7));return {av,o:{x:ox,y:226,a:0}};}},
+      B:{f(t){let av;if(t<.35)av={x:lerp(20,262,eo(seg(t,0,.35))),y:195,a:0};else if(t<.62)av={x:262,y:195,a:0};else if(t<.86)av=arc(262,243,48,-Math.PI/2,0,eio(seg(t,.62,.86)));else av={x:310,y:lerp(243,420,seg(t,.86,1)),a:90};
+        const o={x:lerp(-70,720,seg(t,0,.8)),y:226,a:0};return {av,o,pred:(t>.15&&t<.7)?`M${o.x+24} 226 L${o.x+150} 226`:"",ok:t>.66&&t<.95?[262,160]:null};}}},
+  vru:{A:{tc:.72,cp:[447,200],f(t){const ax=t<.72?lerp(40,426,eo(seg(t,0,.72))):426+2*seg(t,.72,.78);let bx=lerp(330,446,seg(t,0,.72)),by=228;if(t>.5)by=lerp(228,203,eio(seg(t,.5,.72)));if(t>.72)bx=446+3*seg(t,.72,.78);
+        const ba=(t>.5&&t<.72)?-26*Math.sin(Math.PI*seg(t,.5,.72)):0;return {av:{x:ax,y:195,a:0},o:{x:bx,y:by,a:ba},p:{x:492,y:226,a:0}};}},
+      B:{f(t){let ax;if(t<.6)ax=lerp(40,352,eo(seg(t,0,.6)));else if(t<.84)ax=lerp(352,366,seg(t,.6,.84));else ax=lerp(366,450,eio(seg(t,.84,1)));
+        let bx=lerp(330,446,seg(t,0,.72)),by=228;if(t>.5)by=lerp(228,203,eio(seg(t,.5,.72)));if(t>.72){bx=lerp(446,560,seg(t,.72,.98));by=lerp(203,228,eio(seg(t,.86,.98)));}
+        const ba=(t>.5&&t<.72)?-26*Math.sin(Math.PI*seg(t,.5,.72)):(t>.86&&t<.98?22*Math.sin(Math.PI*seg(t,.86,.98)):0);
+        return {av:{x:ax,y:195,a:0},o:{x:bx,y:by,a:ba},p:{x:492,y:226,a:0},pred:(t>.3&&t<.74)?`M${bx+12} ${by} Q ${bx+48} ${by} ${bx+70} 205 T ${bx+150} 210`:"",ok:t>.7&&t<.95?[366,150]:null};}}},
+  rear:{A:{tc:.70,cp:[226,195],f(t){const av={x:lerp(30,248,eo(seg(t,0,.45))),y:195,a:0};if(t>.70)av.x=lerp(248,254,eo(seg(t,.70,.76)));
+        let ox=t<.45?lerp(-90,110,seg(t,0,.45)):lerp(110,204,eo(seg(t,.45,.70)));if(t>.70)ox=lerp(204,207,seg(t,.70,.76));return {av,o:{x:ox,y:195,a:0}};}},
+      B:{f(t){const av={x:lerp(30,238,eo(seg(t,0,.62))),y:195,a:0},ox=lerp(-90,170,eo(seg(t,0,.82)));return {av,o:{x:ox,y:195,a:0},gap:t>.82?[ox+22,av.x-25]:null,ok:t>.84&&t<.98?[230,150]:null};}}}
+};
+const tf=(n,p)=>n.setAttribute("transform",`translate(${p.x} ${p.y}) rotate(${p.a||0})`);
+function drawGap(g){A.gap.innerHTML="";if(!g){A.gap.setAttribute("opacity",0);return;}A.gap.setAttribute("opacity",1);
+  [[g[0],g[1],170,170],[g[0],g[0],164,176],[g[1],g[1],164,176]].forEach(l=>el("line",{x1:l[0],x2:l[1],y1:l[2],y2:l[3],stroke:"var(--pass)","stroke-width":2},A.gap));
+  txt(A.gap,{x:(g[0]+g[1])/2,y:160,"text-anchor":"middle","font-size":10,"font-family":"var(--mono)",fill:"var(--pass)"},"ROOM TO STOP");}
+function drawScene(phase,t,clock){
+  const s=SC[scen][phase],f=s.f(t);
+  tf(A.av,f.av);tf(A.cone,f.av);tf(A.other,f.o);tf(A.box,{x:f.o.x,y:f.o.y,a:f.o.a});if(A.parked&&f.p)tf(A.parked,f.p);
+  A.sweepG.setAttribute("transform",`translate(${f.av.x} ${f.av.y}) rotate(${(clock*0.12)%360})`);
+  A.ring.setAttribute("cx",f.av.x);A.ring.setAttribute("cy",f.av.y);const ph=(t*4)%1;A.ring.setAttribute("r",24+ph*80);A.ring.setAttribute("opacity",(.6*(1-ph)).toFixed(3));
+  A.bannerBg.setAttribute("fill",phase==="A"?"var(--hit)":"var(--pass)");A.bannerTx.textContent=phase==="A"?"REPORTED PATTERN":"VALIDATION TARGET";
+  A.pred.setAttribute("d",f.pred||"");A.pred.setAttribute("opacity",f.pred?.95:0);
+  drawGap(phase==="B"?f.gap:null);
+  if(f.ok){A.ok.setAttribute("opacity",1);A.ok.setAttribute("transform",`translate(${f.ok[0]} ${f.ok[1]})`);}else A.ok.setAttribute("opacity",0);
+  if(phase==="A"&&t>=s.tc){const k=cl((t-s.tc)/.2);A.flash.setAttribute("cx",s.cp[0]);A.flash.setAttribute("cy",s.cp[1]);A.flash.setAttribute("r",6+k*30);A.flash.setAttribute("opacity",(1-k).toFixed(3));A.burst.setAttribute("cx",s.cp[0]);A.burst.setAttribute("cy",s.cp[1]);A.burst.setAttribute("r",6);}
+  else{A.flash.setAttribute("r",0);A.burst.setAttribute("r",0);}
+  document.getElementById("ph-a").classList.toggle("on",phase==="A");document.getElementById("ph-b").classList.toggle("on",phase==="B");
+}
+const DA=6200,DB=6800,HOLD=1300,CYCLE=DA+HOLD+DB+HOLD,ORDER=["rt","vru","rear"];
+let playing=!reduce,tour=!reduce,start=null,raf=null;
+function frame(ts){if(start===null)start=ts;let e=ts-start;
+  if(e>=CYCLE){if(tour){selectScenario(ORDER[(ORDER.indexOf(scen)+1)%3]);}start=ts;e=0;}
+  if(e<DA+HOLD)drawScene("A",Math.min(e/DA,1),ts);else drawScene("B",Math.min((e-DA-HOLD)/DB,1),ts);
+  raf=requestAnimationFrame(frame);}
+function run(){if(raf)cancelAnimationFrame(raf);start=null;raf=requestAnimationFrame(frame);}
+function stop(){if(raf)cancelAnimationFrame(raf);raf=null;}
+function selectScenario(s){scen=s;setupScene();renderPanel();drawScene("A",SC[s].A.tc+.06,0);}
+const playBtn=document.getElementById("play"),tourBtn=document.getElementById("tour");
+function syncBtns(){playBtn.textContent=playing?"Pause":"Play";tourBtn.textContent=tour?"Tour on":"Tour off";tourBtn.setAttribute("aria-pressed",tour);}
+playBtn.addEventListener("click",()=>{playing=!playing;syncBtns();if(playing)run();else{stop();drawScene("A",SC[scen].A.tc+.06,0);}});
+tourBtn.addEventListener("click",()=>{tour=!tour;syncBtns();});
+document.querySelectorAll("[data-s]").forEach(b=>b.addEventListener("click",()=>{tour=false;syncBtns();selectScenario(b.dataset.s);if(playing)run();}));
+selectScenario("rt");syncBtns();if(playing)run();
+
+/* ============ 3 · Statistics ============ */
+(function forest(){
+  const R=[
+    ["Right turn into a car","All Zoox · 10/158",6.3,3.5,11.3,0.6,0.4,1.1,"7.5e-6",true,"var(--car1)"],
+    ["Rear-ended by a car, stopped","All Zoox · 21/158",13.3,8.9,19.5,6.1,5.2,7.2,"0.007",true,"var(--car2)"],
+    ["Any right turn","Robotaxi · 5/48",10.4,4.5,22.2,2.3,1.7,2.9,"0.016",true,"var(--car1)"],
+    ["Cyclist or pedestrian","Robotaxi · 5/48",10.4,4.5,22.2,1.9,1.4,2.5,"0.010",true,"var(--bike)"],
+    ["Rear-ended by a car, stopped","Robotaxi · 5/48",10.4,4.5,22.2,6.1,5.2,7.2,"0.44",false,"var(--car2)"],
+    ["Any injury reported","Test fleet · 28/110",25.5,18.2,34.3,8.8,7.7,10.0,"3.7e-6",true,"var(--test)"],
+    ["Any injury reported","Robotaxi · 5/48",10.4,4.5,22.2,8.8,7.7,10.0,"0.61",false,"var(--av)"]
+  ];
+  const W=640,L=210,Rt=120,rowH=46,T=30,H=T+R.length*rowH+30,max=36,x=v=>L+(W-L-Rt)*v/max;
+  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,class:"fluid",role:"img","aria-label":"Zoox versus Waymo shares with 95% confidence intervals"});svg.style.minWidth="560px";
+  [0,10,20,30].forEach(t=>{el("line",{x1:x(t),x2:x(t),y1:T-8,y2:H-26,stroke:"var(--line)"},svg);txt(svg,{x:x(t),y:H-10,"text-anchor":"middle","font-size":11,"font-family":"var(--mono)",fill:"var(--muted)"},t+"%");});
+  txt(svg,{x:W-Rt+14,y:16,"font-size":10.5,"font-family":"var(--mono)",fill:"var(--muted)"},"HOLM p");
+  [["Zoox slice","var(--av)"],["Waymo","var(--peer)"]].forEach((l,i)=>{el("circle",{cx:L+6+i*100,cy:12,r:5,fill:l[1]},svg);txt(svg,{x:L+16+i*100,y:16,"font-size":12,"font-family":"var(--body)",fill:"var(--ink)"},l[0]);});
+  R.forEach((r,i)=>{const y=T+i*rowH+16;
+    if(i%2===0)el("rect",{x:0,y:y-20,width:W,height:rowH,fill:"var(--ground)",opacity:.6},svg);
+    txt(svg,{x:6,y:y-2,"font-size":13,"font-weight":600,"font-family":"var(--body)",fill:"var(--ink)"},r[0]);
+    txt(svg,{x:6,y:y+14,"font-size":11,"font-family":"var(--mono)",fill:"var(--muted)"},r[1]);
+    el("line",{x1:x(r[6]),x2:x(r[7]),y1:y+8,y2:y+8,stroke:"var(--peer)","stroke-width":3,"stroke-linecap":"round"},svg);
+    el("circle",{cx:x(r[5]),cy:y+8,r:5,fill:"var(--peer)"},svg);
+    const ci=el("line",{x1:x(r[3]),x2:x(r[4]),y1:y-4,y2:y-4,stroke:r[10],"stroke-width":4,"stroke-linecap":"round",opacity:.55},svg);
+    const dot=el("circle",{cx:x(r[2]),cy:y-4,r:7,fill:r[10],stroke:"var(--surface)","stroke-width":2},svg);
+    if(!reduce)el("animate",{attributeName:"r",values:"7;9;7",dur:"2.4s",begin:`${i*.25}s`,repeatCount:"indefinite"},dot);
+    const tag=el("g",{transform:`translate(${W-Rt+12} ${y-12})`},svg);
+    el("rect",{x:0,y:0,width:96,height:22,rx:5,fill:r[9]?"var(--hit-soft)":"var(--ground)"},tag);
+    txt(tag,{x:8,y:15,"font-size":11,"font-family":"var(--mono)",fill:r[9]?"var(--hit)":"var(--muted)"},(r[9]?"● ":"○ ")+r[8]);
+  });
+  document.getElementById("forest").appendChild(svg);
+})();
+(function bayes(){
+  const B=[["rt","Right turns",5,48,52,2309,"0.999","Very likely higher than Waymo's"],["vru","Cyclists & pedestrians",5,48,43,2309,"> 0.999","Very likely higher than Waymo's"],["rear","Rear-ended by a car",5,48,141,2309,"0.92","Probably higher, not yet settled"],["inj","Any injury",5,48,203,2309,"0.74","Weak evidence of any difference"]];
+  const pills=document.getElementById("bayes-pills");
+  function lgamma(z){const g=7,c=[0.99999999999980993,676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+    if(z<0.5)return Math.log(Math.PI/Math.sin(Math.PI*z))-lgamma(1-z);z-=1;let x=c[0];for(let i=1;i<g+2;i++)x+=c[i]/(z+i);const t=z+g+.5;return .5*Math.log(2*Math.PI)+(z+.5)*Math.log(t)-t+Math.log(x);}
+  const lbeta=(a,b)=>lgamma(a)+lgamma(b)-lgamma(a+b);
+  const pdf=(x,a,b)=>x<=0||x>=1?0:Math.exp((a-1)*Math.log(x)+(b-1)*Math.log(1-x)-lbeta(a,b));
+  const W=560,H=230,L=14,Rr=14,T=14,Bt=34,xmax=.35,N=280,xs=Array.from({length:N},(_,i)=>(i+.5)/N*xmax);
+  const X=v=>L+(W-L-Rr)*v/xmax,Y=v=>T+(H-T-Bt)*(1-v);
+  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,class:"fluid",role:"img","aria-label":"Posterior distributions of robotaxi and Waymo shares"});
+  [0,.1,.2,.3].forEach(t=>{el("line",{x1:X(t),x2:X(t),y1:T,y2:H-Bt,stroke:"var(--line)"},svg);txt(svg,{x:X(t),y:H-14,"text-anchor":"middle","font-size":11,"font-family":"var(--mono)",fill:"var(--muted)"},Math.round(t*100)+"%");});
+  const wArea=el("path",{fill:"var(--peer)",opacity:.28},svg),wLine=el("path",{fill:"none",stroke:"var(--peer)","stroke-width":2.5},svg);
+  const rArea=el("path",{fill:"var(--av)",opacity:.25},svg),rLine=el("path",{fill:"none",stroke:"var(--av)","stroke-width":3},svg);
+  const wLab=txt(svg,{"font-size":12,"font-family":"var(--body)","font-weight":600,fill:"var(--muted)"},"Waymo");
+  const rLab=txt(svg,{"font-size":12,"font-family":"var(--body)","font-weight":600,fill:"var(--av)"},"Robotaxi");
+  document.getElementById("posterior").appendChild(svg);
+  let cur=null,anim=null;
+  const curve=(k,n)=>{const ys=xs.map(x=>pdf(x,1+k,1+n-k)),m=Math.max(...ys);return ys.map(v=>v/m);};
+  const path=(ys,close)=>{let d=ys.map((v,i)=>(i?"L":"M")+X(xs[i]).toFixed(1)+" "+Y(v).toFixed(1)).join(" ");if(close)d+=` L${X(xs[N-1])} ${Y(0)} L${X(xs[0])} ${Y(0)} Z`;return d;};
+  function paint(r,w){rArea.setAttribute("d",path(r,1));rLine.setAttribute("d",path(r));wArea.setAttribute("d",path(w,1));wLine.setAttribute("d",path(w));
+    const ri=r.indexOf(Math.max(...r)),wi=w.indexOf(Math.max(...w));
+    rLab.setAttribute("x",Math.min(X(xs[ri])+8,W-70));rLab.setAttribute("y",Y(1)+12);wLab.setAttribute("x",X(xs[wi])+8);wLab.setAttribute("y",Y(1)+12);}
+  function show(i){
+    const b=B[i],r=curve(b[2],b[3]),w=curve(b[4],b[5]);
+    document.getElementById("p-big").textContent=b[6];
+    document.getElementById("p-txt").textContent=`P(robotaxi share > Waymo share) · ${b[7]}. Robotaxi ${b[2]} of ${b[3]}; Waymo ${b[4]} of ${fmt(b[5])}.`;
+    pills.querySelectorAll("button").forEach((p,j)=>p.setAttribute("aria-pressed",j===i));
+    if(!cur||reduce){paint(r,w);cur={r,w};return;}
+    const from=cur,t0=performance.now();if(anim)cancelAnimationFrame(anim);
+    const step=now=>{const k=eio(cl((now-t0)/650));const rr=from.r.map((v,j)=>lerp(v,r[j],k)),ww=from.w.map((v,j)=>lerp(v,w[j],k));paint(rr,ww);cur={r:rr,w:ww};if(k<1)anim=requestAnimationFrame(step);};
+    anim=requestAnimationFrame(step);
+  }
+  B.forEach((b,i)=>{const p=document.createElement("button");p.type="button";p.className="pill";p.textContent=b[1];p.addEventListener("click",()=>show(i));pills.appendChild(p);});
+  show(0);
+})();
+
+/* ============ 4 · Validation lab ============ */
+const MPH=0.44704, CAR_L=4.5, NEAR=1.5;
+const LAB={
+  rt:{name:"Right turn",linked:"<b>Linked finding:</b> right turns are 10.4% of robotaxi reports vs 2.3% for Waymo (Chapter 3).",
+    sliders:[["vc","Adjacent car speed",15,40,1,25,"mph"],["d","Car distance to conflict zone",5,60,1,22,"m"],["T","Time the robotaxi occupies the lane",1.5,4,.1,2.5,"s"]],
+    policies:[["base","Baseline: turn now"],["yield","Predict & yield"]],
+    axes:{x:"vc",y:"d"},
+    sim(p,policy){
+      const vc=p.vc*MPH,d=p.d,T=p.T,dt=.05,frames=[];let tgo=0;
+      const ta0=d/vc;
+      if(policy==="yield"&&(ta0<T||ta0-T<NEAR))tgo=(d+3+CAR_L)/vc+NEAR;
+      let x=0,v=vc,outcome="pass",metric=null,braking=false,contact=false;
+      const needBrake=ta0<T+tgo&&tgo===0;
+      for(let t=0;t<=9;t+=dt){
+        if(needBrake&&t>1.0&&!contact){v=Math.max(0,v-6*dt);braking=true;}
+        if(!contact)x+=v*dt;
+        const av=t<tgo?0:cl((t-tgo)/T);
+        if(!contact&&x>=d&&x<=d+3+CAR_L&&t>=tgo&&t<=tgo+T){contact=true;x=d;}
+        frames.push({t,car:x,av,contact});
+      }
+      if(contact){outcome="hit";metric="Contact while the robotaxi is in the lane";}
+      else if(tgo>0){outcome="pass";metric=`Waited ${tgo.toFixed(1)} s · car cleared first`;}
+      else if(needBrake){outcome="near";metric="Car forced to brake hard to avoid contact";}
+      else{const pet=ta0-T;outcome=pet<NEAR?"near":"pass";metric=`Post-encroachment time ${pet.toFixed(2)} s`;}
+      return {frames,outcome,metric};
+    }},
+  cyc:{name:"Cyclist cut-in",linked:"<b>Linked finding:</b> cyclists and pedestrians appear in 10.4% of robotaxi reports vs 1.9% for Waymo (Chapter 3).",
+    sliders:[["v","Robotaxi speed",15,35,1,25,"mph"],["vl","Cyclist lateral speed",0.5,2.5,.1,1.4,"m/s"],["lat","Perception-to-brake latency",0.2,1.5,.05,0.6,"s"]],
+    policies:[],
+    axes:{x:"vl",y:"lat"},
+    sim(p){
+      const dt=.02,vc=4,D=15,frames=[];let xa=0,va=p.v*MPH,xc=CAR_L+D,yc=0,minT=Infinity,outcome="pass",contact=false;
+      const ti=1.3/p.vl;
+      for(let t=0;t<=7;t+=dt){
+        if(t>0.5/p.vl+p.lat&&!contact)va=Math.max(0,va-6*dt);
+        if(!contact){xa+=va*dt;xc+=vc*dt;yc=Math.min(2.4,yc+p.vl*dt);}
+        const gap=xc-(xa+CAR_L);
+        const inLane=yc>=1.3;
+        if(inLane&&!contact){if(gap<=0&&gap>-CAR_L-1.8){contact=true;}else if(gap>0&&va>vc)minT=Math.min(minT,gap/(va-vc));}
+        frames.push({t,xa,xc,yc,contact});
+      }
+      if(contact)return {frames,outcome:"hit",metric:"Contact after the cyclist entered the lane"};
+      if(minT<NEAR)return {frames,outcome:"near",metric:`Minimum time-to-collision ${minT.toFixed(2)} s`};
+      return {frames,outcome:"pass",metric:isFinite(minT)?`Minimum time-to-collision ${minT.toFixed(2)} s`:"Never closing on the cyclist"};
+    }},
+  rear:{name:"Stop with follower",linked:"<b>Linked finding:</b> rear-ended by a car while stopped is 13.3% of Zoox reports vs 6.1% for Waymo (Chapter 3).",
+    sliders:[["a","Robotaxi braking rate",1.5,6,.1,3.5,"m/s²"],["h","Follower headway",0.6,2.5,.05,1.1,"s"],["tr","Follower reaction time",0.6,2,.05,1.2,"s"]],
+    policies:[],
+    axes:{x:"a",y:"h"},
+    sim(p){
+      const dt=.02,v0=25*MPH,frames=[];let xa=0,va=v0,xf=-(p.h*v0)-CAR_L,vf=v0,minT=Infinity,contact=false;
+      for(let t=0;t<=9;t+=dt){
+        va=Math.max(0,va-p.a*dt);if(t>p.tr)vf=Math.max(0,vf-4.0*dt);
+        if(!contact){xa+=va*dt;xf+=vf*dt;}
+        const gap=xa-(xf+CAR_L);
+        if(gap<=0&&!contact){contact=true;xf=xa-CAR_L;}
+        if(!contact&&vf>va)minT=Math.min(minT,gap/(vf-va));
+        frames.push({t,xa,xf,contact});
+      }
+      if(contact)return {frames,outcome:"hit",metric:"Follower makes rear contact"};
+      if(minT<NEAR)return {frames,outcome:"near",metric:`Minimum time-to-collision ${minT.toFixed(2)} s`};
+      return {frames,outcome:"pass",metric:`Minimum time-to-collision ${isFinite(minT)?minT.toFixed(2)+" s":"never closing"}`};
+    }}
+};
+let lab="rt",policy="base",params={};
+const labsvg=document.getElementById("labscene");
+let L={};
+function buildLabScene(){
+  labsvg.innerHTML="";defs(labsvg,"avg-lab");
+  el("rect",{x:0,y:0,width:640,height:190,fill:"var(--grass)"},labsvg);
+  el("rect",{x:0,y:30,width:640,height:120,fill:"var(--walk)"},labsvg);
+  el("rect",{x:0,y:40,width:640,height:96,fill:"var(--road)"},labsvg);
+  el("line",{x1:0,x2:640,y1:88,y2:88,stroke:"var(--mark-w)","stroke-width":2,"stroke-dasharray":"14 12",opacity:.6},labsvg);
+  L={};
+  if(lab==="rt"){
+    el("rect",{x:448,y:136,width:44,height:54,fill:"var(--road)"},labsvg);
+    L.zone=el("rect",{x:448,y:90,width:44,height:46,fill:"var(--hit)",opacity:.18,stroke:"var(--hit)","stroke-dasharray":"4 3"},labsvg);
+    txt(labsvg,{x:470,y:184,"text-anchor":"middle","font-size":9.5,"font-family":"var(--mono)",fill:"var(--mark-w)"},"TURN");
+  }
+  if(lab==="cyc"){L.cyc=cyclist(labsvg,1.1);}
+  L.other=lab==="cyc"?null:sedan(labsvg,lab==="rt"?"var(--car1)":"var(--car2)",.9);
+  L.av=robotaxi(labsvg,"avg-lab",.9);
+  L.flash=el("circle",{r:0,fill:"none",stroke:"var(--hit)","stroke-width":3},labsvg);
+  L.clock=txt(labsvg,{x:12,y:22,"font-size":11,"font-family":"var(--mono)",fill:"var(--ink)"},"");
+}
+let labRes=null,labT0=null,labRaf=null;
+function labDraw(i){
+  const f=labRes.frames[Math.min(i,labRes.frames.length-1)];
+  L.clock.textContent="t = "+f.t.toFixed(1)+" s";
+  if(lab==="rt"){
+    const s=7.5,x0=470-params.d*s;
+    tf(L.other,{x:Math.min(x0+f.car*s,700),y:113,a:0});
+    const ax=470,ay=lerp(64,172,eio(f.av)),aa=lerp(0,90,eio(cl(f.av*1.3)));
+    tf(L.av,{x:ax-lerp(0,0,f.av),y:ay,a:aa});
+    if(f.contact){L.flash.setAttribute("cx",458);L.flash.setAttribute("cy",113);L.flash.setAttribute("r",14);}else L.flash.setAttribute("r",0);
+  }else if(lab==="cyc"){
+    const s=6,off=60;
+    tf(L.av,{x:off+f.xa*s+13,y:64,a:0});
+    tf(L.cyc,{x:off+f.xc*s,y:113-f.yc*19,a:-10*Math.min(1,f.yc)});
+    if(f.contact){L.flash.setAttribute("cx",off+f.xc*s-8);L.flash.setAttribute("cy",113-f.yc*19);L.flash.setAttribute("r",14);}else L.flash.setAttribute("r",0);
+  }else{
+    const s=8,off=360-(25*MPH)**2/(2*params.a)*s;
+    tf(L.av,{x:off+f.xa*s+13,y:88,a:0});tf(L.other,{x:off+f.xf*s+13,y:88,a:0});
+    if(f.contact){L.flash.setAttribute("cx",off+f.xa*s-5);L.flash.setAttribute("cy",88);L.flash.setAttribute("r",14);}else L.flash.setAttribute("r",0);
+  }
+}
+function labLoop(ts){if(labT0===null)labT0=ts;const n=labRes.frames.length,dt=labRes.frames[1].t-labRes.frames[0].t,dur=n*dt*1000+900;
+  const e=(ts-labT0)%dur;labDraw(Math.floor(e/1000/dt));labRaf=requestAnimationFrame(labLoop);}
+function runLab(){
+  const cfg=LAB[lab];labRes=cfg.sim(params,policy);
+  const o=document.getElementById("outcome");o.className="outcome "+labRes.outcome;o.textContent={pass:"Pass",near:"Near-miss",hit:"Contact"}[labRes.outcome];
+  document.getElementById("metric").textContent=labRes.metric;
+  if(labRaf)cancelAnimationFrame(labRaf);labT0=null;
+  if(reduce){labDraw(labRes.frames.length-1);}else labRaf=requestAnimationFrame(labLoop);
+  drawMatrix();
+}
+function drawMatrix(){
+  const cfg=LAB[lab],ax=cfg.axes,sx=cfg.sliders.find(s=>s[0]===ax.x),sy=cfg.sliders.find(s=>s[0]===ax.y),n=10;
+  const W=560,H=330,Lm=64,Bm=48,Tm=8,Rm=8,cw=(W-Lm-Rm)/n,ch=(H-Tm-Bm)/n;
+  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,class:"fluid",role:"img","aria-label":"Test matrix of simulated outcomes"});svg.style.minWidth="420px";
+  const cnt={pass:0,near:0,hit:0},col={pass:"var(--pass)",near:"var(--near)",hit:"var(--hit)"};
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++){
+    const p=Object.assign({},params);p[ax.x]=sx[2]+(sx[3]-sx[2])*i/(n-1);p[ax.y]=sy[2]+(sy[3]-sy[2])*j/(n-1);
+    const r=cfg.sim(p,policy);cnt[r.outcome]++;
+    const c=el("rect",{x:Lm+i*cw+1.5,y:Tm+(n-1-j)*ch+1.5,width:cw-3,height:ch-3,rx:4,fill:col[r.outcome],opacity:.88},svg);
+    if(!reduce){c.style.transition="opacity .3s";c.setAttribute("opacity","0.15");setTimeout(()=>c.setAttribute("opacity",".88"),(i+j)*22);}
+  }
+  const px=Lm+((params[ax.x]-sx[2])/(sx[3]-sx[2]))*(n-1)*cw+cw/2,py=Tm+(1-(params[ax.y]-sy[2])/(sy[3]-sy[2]))*(n-1)*ch+ch/2;
+  const mk=el("circle",{cx:px,cy:py,r:Math.min(cw,ch)*.42,fill:"none",stroke:"var(--ink)","stroke-width":3},svg);
+  if(!reduce)el("animate",{attributeName:"stroke-width",values:"3;5;3",dur:"1.2s",repeatCount:"indefinite"},mk);
+  txt(svg,{x:Lm+(W-Lm-Rm)/2,y:H-8,"text-anchor":"middle","font-size":12,"font-family":"var(--body)",fill:"var(--ink)"},`${sx[1]} (${sx[6]}) →`);
+  txt(svg,{x:Lm,y:H-28,"font-size":11,"font-family":"var(--mono)",fill:"var(--muted)"},String(sx[2]));
+  txt(svg,{x:W-Rm,y:H-28,"text-anchor":"end","font-size":11,"font-family":"var(--mono)",fill:"var(--muted)"},String(sx[3]));
+  const yl=txt(svg,{x:14,y:Tm+(H-Tm-Bm)/2,"text-anchor":"middle","font-size":12,"font-family":"var(--body)",fill:"var(--ink)",transform:`rotate(-90 14 ${Tm+(H-Tm-Bm)/2})`},`${sy[1]} (${sy[6]}) →`);
+  txt(svg,{x:Lm-6,y:H-Bm,"text-anchor":"end","font-size":11,"font-family":"var(--mono)",fill:"var(--muted)"},String(sy[2]));
+  txt(svg,{x:Lm-6,y:Tm+12,"text-anchor":"end","font-size":11,"font-family":"var(--mono)",fill:"var(--muted)"},String(sy[3]));
+  const host=document.getElementById("matrix");host.innerHTML="";host.appendChild(svg);
+  document.getElementById("counts").innerHTML=`<span class="count" style="background:var(--pass-soft);color:var(--pass)">${cnt.pass} pass</span><span class="count" style="background:var(--near-soft);color:var(--near)">${cnt.near} near-miss</span><span class="count" style="background:var(--hit-soft);color:var(--hit)">${cnt.hit} contact</span>`;
+}
+function selectLab(k){
+  lab=k;const cfg=LAB[k];params={};policy=cfg.policies.length?cfg.policies[0][0]:"base";
+  document.querySelectorAll("[data-l]").forEach(b=>b.setAttribute("aria-selected",b.dataset.l===k));
+  const host=document.getElementById("sliders");host.innerHTML="";
+  cfg.sliders.forEach(s=>{params[s[0]]=s[5];
+    const w=document.createElement("div");w.className="slider";const id="sl-"+k+"-"+s[0];
+    w.innerHTML=`<label for="${id}"><span></span><output id="${id}-o"></output></label><input type="range" id="${id}" min="${s[2]}" max="${s[3]}" step="${s[4]}" value="${s[5]}">`;
+    w.querySelector("label span").textContent=s[1];
+    const inp=w.querySelector("input"),out=w.querySelector("output");
+    const upd=()=>{params[s[0]]=parseFloat(inp.value);out.textContent=inp.value+" "+s[6];};upd();
+    inp.addEventListener("input",()=>{upd();runLab();});
+    host.appendChild(w);});
+  const pol=document.getElementById("policy");pol.innerHTML="";
+  cfg.policies.forEach(p=>{const b=document.createElement("button");b.type="button";b.className="pill";b.textContent=p[1];b.setAttribute("aria-pressed",p[0]===policy);
+    b.addEventListener("click",()=>{policy=p[0];pol.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));runLab();});pol.appendChild(b);});
+  document.getElementById("linked").innerHTML=cfg.linked;
+  buildLabScene();runLab();
+}
+document.querySelectorAll("[data-l]").forEach(b=>b.addEventListener("click",()=>selectLab(b.dataset.l)));
+selectLab("rt");
+})();
+</script>
+
+</body>
+</html>
