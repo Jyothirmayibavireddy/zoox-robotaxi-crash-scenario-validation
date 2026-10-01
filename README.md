@@ -1,5 +1,7 @@
    **[▶ View the interactive playbook](https://geethasagarb.github.io/zoox-safety-validation-analysis/)**
 
+   **(https://jyothirmayibavireddy.github.io/zoox-robotaxi-crash-scenario-validation/)**
+
 # Prioritizing Safety Validation for Zoox's Robotaxi Expansion: Which Crash Scenarios Need Attention First?
 
 **Business problem:** Zoox is expanding driverless robotaxi service into new cities. Its safety and validation teams have limited testing capacity, so they need to know which real-world crash scenarios to prioritize in simulation and on-road validation work.
