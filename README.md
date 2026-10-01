@@ -1,6 +1,4 @@
-   **[▶ View the interactive playbook](https://geethasagarb.github.io/zoox-safety-validation-analysis/)**
-
-   **(https://jyothirmayibavireddy.github.io/zoox-robotaxi-crash-scenario-validation/)**
+   **[▶ View the interactive playbook](https://jyothirmayibavireddy.github.io/zoox-robotaxi-crash-scenario-validation/)**
 
 # Prioritizing Safety Validation for Zoox's Robotaxi Expansion: Which Crash Scenarios Need Attention First?
 
