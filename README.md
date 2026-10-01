@@ -9,6 +9,49 @@
 2. Do patterns seen in the test fleet carry over to the driverless robotaxi?
 3. Do scenarios differ by city (San Francisco vs. Las Vegas), which matters for planning new-city launches?
 
+## Safety Validation Workflow
+
+```mermaid
+flowchart TD
+
+node_analyst(("Safety analyst"))
+node_nhtsa["NHTSA SGO"]
+node_crash_exports["Crash CSV exports"]
+node_local_data[("Local raw data")]
+node_notebook["Safety analysis"]
+node_schema_docs["Schema references"]
+node_scenario_results["Scenario comparisons"]
+node_fleet_results["Fleet carryover"]
+node_city_results["City differences"]
+
+node_nhtsa -->|"publishes"| node_crash_exports
+node_crash_exports -->|"download to"| node_local_data
+node_analyst -->|"runs"| node_notebook
+node_local_data -->|"provides inputs"| node_notebook
+node_schema_docs -->|"documents schemas"| node_notebook
+node_notebook -->|"compares scenarios"| node_scenario_results
+node_notebook -->|"analyzes carryover"| node_fleet_results
+node_notebook -->|"compares cities"| node_city_results
+
+click node_notebook "https://github.com/jyothirmayibavireddy/zoox-robotaxi-crash-scenario-validation/blob/main/notebooks/zoox_safety_validation_priorities.ipynb"
+click node_schema_docs "https://github.com/jyothirmayibavireddy/zoox-robotaxi-crash-scenario-validation/tree/main/docs"
+click node_scenario_results "https://github.com/jyothirmayibavireddy/zoox-robotaxi-crash-scenario-validation/blob/main/notebooks/zoox_safety_validation_priorities.ipynb"
+click node_fleet_results "https://github.com/jyothirmayibavireddy/zoox-robotaxi-crash-scenario-validation/blob/main/notebooks/zoox_safety_validation_priorities.ipynb"
+click node_city_results "https://github.com/jyothirmayibavireddy/zoox-robotaxi-crash-scenario-validation/blob/main/notebooks/zoox_safety_validation_priorities.ipynb"
+
+classDef toneNeutral fill:#f8fafc,stroke:#334155,stroke-width:1.5px,color:#0f172a
+classDef toneBlue fill:#dbeafe,stroke:#2563eb,stroke-width:1.5px,color:#172554
+classDef toneAmber fill:#fef3c7,stroke:#d97706,stroke-width:1.5px,color:#78350f
+classDef toneMint fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d
+classDef toneRose fill:#ffe4e6,stroke:#e11d48,stroke-width:1.5px,color:#881337
+classDef toneIndigo fill:#e0e7ff,stroke:#4f46e5,stroke-width:1.5px,color:#312e81
+classDef toneTeal fill:#ccfbf1,stroke:#0f766e,stroke-width:1.5px,color:#134e4a
+
+class node_analyst,node_nhtsa,node_crash_exports toneIndigo
+class node_local_data toneAmber
+class node_notebook,node_schema_docs,node_scenario_results,node_fleet_results,node_city_results toneTeal
+```
+
 **Notebook:** [`notebooks/zoox_safety_validation_priorities.ipynb`](notebooks/zoox_safety_validation_priorities.ipynb)
 
 ## Data source
